@@ -1,14 +1,18 @@
 package nl.tonni.adventofcode2021
 
-class BingoCard(val numbersAndState: List<List<Pair<Int, Boolean>>>) {
-    val nrOfColumns = numbersAndState[0].size
+class BingoCard(private val numbersAndState: List<List<Pair<Int, Boolean>>>) {
+    private val nrOfColumns = numbersAndState[0].size
 
     /**
      * Places a number and returns a new bingo card.
      */
-    fun placeNumber(number: Int): BingoCard {
+    fun placeNumber(placedNumber: Int): BingoCard {
         val newNumbersAndState = numbersAndState
-            .map { row ->row.map {(rowNumber, checked) -> if (rowNumber == number) Pair(rowNumber, true) else Pair(rowNumber, checked) }}
+            .map { row ->
+                row.map { (number, checked) ->
+                    if (number == placedNumber) Pair(number, true) else Pair(number, checked)
+                }
+            }
 
         return BingoCard(newNumbersAndState)
     }
@@ -30,6 +34,24 @@ class BingoCard(val numbersAndState: List<List<Pair<Int, Boolean>>>) {
 
         return hasVerticalMatch
     }
+
+    override fun toString(): String {
+        val nrOfRows = numbersAndState.size
+
+        return buildString {
+            appendLine("-----")
+            for (row in numbersAndState) {
+                for (number in row) {
+                    append(number)
+                }
+                appendLine()
+            }
+            for (i in 0 until nrOfColumns + 2) {
+                append('-')
+            }
+            appendLine("-----")
+        }
+    }
 }
 
 private fun creatEmptyBingoCard(numberRows: List<List<Int>>): BingoCard {
@@ -47,6 +69,18 @@ fun main() {
                 cardLine.split(" ").filter { nr -> nr.isNotBlank() }.map { nr -> nr.toInt() }
             }
         }
+        .map(::creatEmptyBingoCard)
 
-    
+    val bingoCard = bingoCards[0]
+    println(bingoCard)
+
+    val bingo = bingoCard.placeNumber(31)
+        .placeNumber(33)
+        .placeNumber(77)
+        .placeNumber(21)
+        .placeNumber(95)
+        .hasBingo()
+
+    println(bingo)
+
 }
