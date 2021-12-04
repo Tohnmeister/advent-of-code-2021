@@ -1,6 +1,6 @@
 package nl.tonni.adventofcode2021
 
-class BingoCard(private val numbersAndState: List<List<Pair<Int, Boolean>>>) {
+private class BingoCard(private val numbersAndState: List<List<Pair<Int, Boolean>>>) {
     private val nrOfColumns = numbersAndState[0].size
 
     /**
@@ -97,7 +97,7 @@ private fun List<BingoCard>.firstThatHasBingoWithMove(move: Int): BingoCard? {
     return firstOrNull { it.hasBingoWithMove(move) }
 }
 
-tailrec fun findBingo(bingoCards: List<BingoCard>, remainingMoves: List<Int>): Pair<Int, BingoCard>? {
+private tailrec fun findBingo(bingoCards: List<BingoCard>, remainingMoves: List<Int>): Pair<Int, BingoCard>? {
     if (remainingMoves.isEmpty()) {
         return null
     }
@@ -113,7 +113,7 @@ tailrec fun findBingo(bingoCards: List<BingoCard>, remainingMoves: List<Int>): P
     return findBingo(newBingoCards, remainingMoves.drop(1))
 }
 
-fun findLastBingo(bingoCards: List<BingoCard>, remainingMoves: List<Int>, lastWinningMoveAndCard: Pair<Int, BingoCard>?): Pair<Int, BingoCard>? {
+private tailrec fun findLastBingo(bingoCards: List<BingoCard>, remainingMoves: List<Int>, lastWinningMoveAndCard: Pair<Int, BingoCard>?): Pair<Int, BingoCard>? {
     if (remainingMoves.isEmpty()) {
         return lastWinningMoveAndCard
     }
