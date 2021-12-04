@@ -35,6 +35,30 @@ class BingoCard(private val numbersAndState: List<List<Pair<Int, Boolean>>>) {
         return hasVerticalMatch
     }
 
+    /**
+     * Checks whether this card has a bingo with this move, and not already with other moves.
+     */
+    fun hasBingoWithMove(move: Int): Boolean {
+        val horizontalMatches = numbersAndState.filter { row -> row.all { it.second }}
+
+        val columns = (0 until nrOfColumns).map { columnIndex -> numbersAndState.map { row -> row[columnIndex] }}
+
+        val verticalMatches = columns.filter { column -> column.all { it.second }}
+
+        val nrOfMatches = horizontalMatches.size + verticalMatches.size
+        if (nrOfMatches == 0 || nrOfMatches > 1) {
+            return false
+        }
+        if (horizontalMatches.isNotEmpty()) {
+            return horizontalMatches.first().any { it.first == move }
+        }
+        return verticalMatches.first().any { it.first == move }
+    }
+
+    fun sumOfUnmarkedNumbers(): Int {
+        return numbersAndState.flatten().filter { !it.second }.sumOf { it.first }
+    }
+
     override fun toString(): String {
         val nrOfRows = numbersAndState.size
 
@@ -58,6 +82,51 @@ private fun creatEmptyBingoCard(numberRows: List<List<Int>>): BingoCard {
     return BingoCard(numberRows.map { row -> row.map { Pair(it, false) } })
 }
 
+/**
+ * Places a number in all of the boards and returns the list of new boards
+ */
+private fun List<BingoCard>.placeNumber(number: Int): List<BingoCard> {
+    return map { it.placeNumber(number) }
+}
+
+private fun List<BingoCard>.firstThatHasBingo(): BingoCard? {
+    return firstOrNull { it.hasBingo() }
+}
+
+private fun List<BingoCard>.firstThatHasBingoWithMove(move: Int): BingoCard? {
+    return firstOrNull { it.hasBingoWithMove(move) }
+}
+
+tailrec fun findBingo(bingoCards: List<BingoCard>, remainingMoves: List<Int>): Pair<Int, BingoCard>? {
+    if (remainingMoves.isEmpty()) {
+        return null
+    }
+
+    val nextMove = remainingMoves.first()
+    val newBingoCards = bingoCards.placeNumber(nextMove)
+    val winningBingoCard = newBingoCards.firstThatHasBingo()
+
+    if (winningBingoCard != null) {
+        return Pair(nextMove, winningBingoCard)
+    }
+
+    return findBingo(newBingoCards, remainingMoves.drop(1))
+}
+
+fun findLastBingo(bingoCards: List<BingoCard>, remainingMoves: List<Int>, lastWinningMoveAndCard: Pair<Int, BingoCard>?): Pair<Int, BingoCard>? {
+    if (remainingMoves.isEmpty()) {
+        return lastWinningMoveAndCard
+    }
+
+    val nextMove = remainingMoves.first()
+    val newBingoCards = bingoCards.placeNumber(nextMove)
+    val winningBingoCard = newBingoCards.firstThatHasBingoWithMove(nextMove)
+
+    val newLastWinningMoveAndCard = if (winningBingoCard != null) Pair(nextMove, winningBingoCard) else lastWinningMoveAndCard
+
+    return findLastBingo(newBingoCards, remainingMoves.drop(1), newLastWinningMoveAndCard)
+}
+
 fun main() {
     val lines = readLines("input/day4/input.txt")
     val moves = lines[0].split(",").map { it.toInt() }
@@ -71,16 +140,11 @@ fun main() {
         }
         .map(::creatEmptyBingoCard)
 
-    val bingoCard = bingoCards[0]
-    println(bingoCard)
+    val (winningMove, winningBingoCard) = findBingo(bingoCards, moves)!!
 
-    val bingo = bingoCard.placeNumber(31)
-        .placeNumber(33)
-        .placeNumber(77)
-        .placeNumber(21)
-        .placeNumber(95)
-        .hasBingo()
+    println(winningMove * winningBingoCard.sumOfUnmarkedNumbers())
 
-    println(bingo)
+    val (lastWinningMove, lastWinningBingoCard) = findLastBingo(bingoCards, moves, null)!!
 
+    println(lastWinningMove * lastWinningBingoCard.sumOfUnmarkedNumbers())
 }
