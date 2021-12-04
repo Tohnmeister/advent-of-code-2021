@@ -140,11 +140,11 @@ fun main() {
         }
         .map(::creatEmptyBingoCard)
 
+    // Part 1
     val (winningMove, winningBingoCard) = findBingo(bingoCards, moves)!!
-
     println(winningMove * winningBingoCard.sumOfUnmarkedNumbers())
 
+    // Part 2
     val (lastWinningMove, lastWinningBingoCard) = findLastBingo(bingoCards, moves, null)!!
-
     println(lastWinningMove * lastWinningBingoCard.sumOfUnmarkedNumbers())
 }
