@@ -1,7 +1,17 @@
 package nl.tonni.adventofcode2021
 
+import kotlin.math.min
+import kotlin.math.max
+
 private data class Point(val x: Int, val y: Int)
-private data class Line(val start: Point, val end: Point)
+private data class Line(val start: Point, val end: Point) {
+    val minX = min(start.x, end.x)
+    val maxX = max(start.x, end.x)
+    val minY = min(start.y, end.y)
+    val maxY = max(start.y, end.y)
+    val allPoints = (minX..maxX).flatMap { x -> (minY..maxY).map { y -> Point(x, y) }}
+    val isStraight = start.x == end.x || start.y == end.y
+}
 
 private fun createLine(lineStr: String): Line {
     val (startStr, endStr) = lineStr.split(" -> ")
@@ -19,7 +29,13 @@ private fun createPoint(pointStr: String): Point {
 }
 
 fun main() {
-    val lines = readLines("input/day5/test.txt").map(::createLine)
+    val lines = readLines("input/day5/input.txt").map(::createLine).filter { it.isStraight }
 
+    val coveredPointCount = lines.fold(emptyMap<Point, Int>()) { accCoveredPointCount, line ->
+        val newPointCount = line.allPoints.associateWith { point -> accCoveredPointCount.getOrDefault(point, 0) + 1 }
+        accCoveredPointCount + newPointCount
+    }
 
+    val count = coveredPointCount.count { it.value > 1 }
+    println(count)
 }
