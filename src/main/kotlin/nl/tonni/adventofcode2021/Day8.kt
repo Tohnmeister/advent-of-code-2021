@@ -18,6 +18,13 @@ data class SignalPattern(val segments: Set<Char>) {
     operator fun plus(other: SignalPattern): SignalPattern {
         return SignalPattern(this.segments + other.segments)
     }
+
+    fun isSuperSetBut(other: SignalPattern, nrOfExtraItems: Int) =
+        this.segments.containsAll(other.segments) && (this - other).nrOfSegments == nrOfExtraItems
+}
+
+private fun List<SignalPattern>.firstThatIsSuperSetBut(other: SignalPattern, nrOfExtraItems: Int): SignalPattern? {
+    return firstOrNull { it.isSuperSetBut(other, nrOfExtraItems) }
 }
 
 data class Entry(val signalPatterns: List<SignalPattern>, val outputValueSignalPatterns: List<SignalPattern>) {
@@ -27,14 +34,14 @@ data class Entry(val signalPatterns: List<SignalPattern>, val outputValueSignalP
     private val signalPattern8 = signalPatterns.first { it.getDigit() == 8 }
     private val signalPatternA = signalPattern7 - signalPattern1
     private val signalPatternBd = signalPattern4 - signalPattern1
-    private val signalPattern9 = signalPatterns.first { (it - (signalPatternA + signalPattern4)).nrOfSegments == 1 }
+    private val signalPattern9 = signalPatterns.firstThatIsSuperSetBut(signalPatternA + signalPattern4, 1)!!
     private val signalPatternG = signalPattern9 - signalPatternA - signalPattern4
     private val signalPatternE = signalPattern8 - signalPattern9
-    private val signalPattern6 = signalPatterns.first { (it - (signalPatternA + signalPatternBd + signalPatternE + signalPatternG)).nrOfSegments == 1 }
+    private val signalPattern6 = signalPatterns.firstThatIsSuperSetBut(signalPatternA + signalPatternBd + signalPatternE + signalPatternG, 1)!!
     private val signalPatternF = signalPattern6 - signalPatternA - signalPatternBd - signalPatternE - signalPatternG
     private val signalPatternC = signalPattern1 - signalPatternF
     private val signalPattern5 = signalPattern9 - signalPatternC
-    private val signalPattern3 = signalPatterns.first { (it - (signalPatternA + signalPatternC + signalPatternF + signalPatternG)).nrOfSegments == 1}
+    private val signalPattern3 = signalPatterns.firstThatIsSuperSetBut(signalPatternA + signalPatternC + signalPatternF + signalPatternG, 1)!!
     private val signalPatternD = signalPattern3 - (signalPatternA + signalPatternC + signalPatternF + signalPatternG)
     private val signalPatternB = signalPatternBd - signalPatternD
     private val signalPattern0 = signalPattern8 - signalPatternD
@@ -59,7 +66,7 @@ data class Entry(val signalPatterns: List<SignalPattern>, val outputValueSignalP
 }
 
 fun main() {
-    val lines = readLines("input/day8/test.txt")
+    val lines = readLines("input/day8/input.txt")
     val entries = lines.map { it.split(" | ") }.map { line ->
         val signalPatternsStr = line[0]
         val outputValueStr = line[1]
